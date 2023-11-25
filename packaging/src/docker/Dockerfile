@@ -55,7 +55,9 @@ RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
     tar -xzvf /opt/apache-hive-$HIVE_VERSION-bin.tar.gz -C /opt/ && \
     rm -rf /opt/apache-hive-$HIVE_VERSION-bin/jdbc/* && \
     tar -xzvf /opt/apache-tez-$TEZ_VERSION-bin.tar.gz -C /opt && \
-    rm -rf /opt/apache-tez-$TEZ_VERSION-bin/share/*
+    rm -rf /opt/apache-tez-$TEZ_VERSION-bin/share/* && \
+    wget -P https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.6/hadoop-aws-3.3.6.jar /opt/hadoop-$HADOOP_VERSION/share/hadoop/hdfs/lib/ && \
+    wget -P https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.367/aws-java-sdk-bundle-1.12.367.jar /opt/hadoop-$HADOOP_VERSION/share/hadoop/hdfs/lib/
 
 FROM openjdk:8-jre-slim AS run
 
