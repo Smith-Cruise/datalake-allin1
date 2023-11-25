@@ -50,6 +50,12 @@ ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 
+# Install dependencies
+RUN set -ex; \
+    apt-get update; \
+    apt-get -y install procps wget; \
+    rm -rf /var/lib/apt/lists/*
+
 RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
     rm -rf /opt/hadoop-$HADOOP_VERSION/share/doc/* && \
     tar -xzvf /opt/apache-hive-$HIVE_VERSION-bin.tar.gz -C /opt/ && \
@@ -67,12 +73,6 @@ ARG TEZ_VERSION
 COPY --from=env /opt/hadoop-$HADOOP_VERSION /opt/hadoop
 COPY --from=env /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
 COPY --from=env /opt/apache-tez-$TEZ_VERSION-bin /opt/tez
-
-# Install dependencies
-RUN set -ex; \
-    apt-get update; \
-    apt-get -y install procps; \
-    rm -rf /var/lib/apt/lists/*
 
 # Set necessary environment variables.
 ENV HADOOP_HOME=/opt/hadoop \
