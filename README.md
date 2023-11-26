@@ -1,4 +1,4 @@
-# datalake-allin1
+# Datalake all in 1
 One command to start your data lake test env! Including Hive metasotre, trino, minio, starrocks, spark, ... etc.
 
 ## What
@@ -17,7 +17,7 @@ docker-compose down
 ```
 
 Resume cluster:
-Change `IS_RESUME` flag to 'true' in metastore-standalone.
+Change `IS_RESUME` flag to `true` in metastore-standalone.
 ```bash
 docker-compose up
 ```
