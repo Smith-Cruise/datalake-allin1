@@ -1,5 +1,0 @@
-exclude gaPattern org\.apache\.hadoop:.*
-include scope compile
-include scope runtime
-exclude scope provided
-exclude scope test
