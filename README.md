@@ -6,6 +6,8 @@ Now we are using minio as storage, hive metastore and trino for writing.
 
 ## How
 
+You need to `git clone https://github.com/Smith-Cruise/datalake-allin1.git` first, then `cd datalake-allin1`.
+
 Start cluster:
 ```bash
 docker-compose up
