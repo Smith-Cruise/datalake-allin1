@@ -36,52 +36,52 @@ services:
       /usr/bin/mc policy set public rustfs/warehouse;
       tail -f /dev/null
       "
-  # postgres:
-  #   image: postgres:16
-  #   container_name: postgres
-  #   volumes:
-  #     - ./data/pg-data:/var/lib/postgresql/data
-  #   environment:
-  #     POSTGRES_USER: 'hive'
-  #     POSTGRES_PASSWORD: 'password'
-  #     POSTGRES_DB: 'metastore_db'
-  #     POSTGRES_HOST_AUTH_METHOD: 'trust'
-  #   ports:
-  #     - '5432:5432'
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U hive -d metastore_db"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 10s
-  #   networks:
-  #     datalake_net:
-  # metastore-standalone:
-  #   image: apache/hive:4.1.0
-  #   container_name: metastore-standalone
-  #   volumes:
-  #     - ./conf/hive/hive-site.xml:/opt/hive/conf/hive-site.xml
-  #     - ./postgresql-42.7.3.jar:/opt/hive/lib/postgres.jar
-  #   networks:
-  #     datalake_net:
-  #   environment:
-  #     SERVICE_NAME: 'metastore'
-  #     DB_DRIVER: 'postgres'
-  #     HADOOP_CLASSPATH: '/opt/hadoop/share/hadoop/tools/lib/bundle-2.24.6.jar:/opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.4.1.jar'
-  #     SERVICE_OPTS: '-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password'
-  #   ports:
-  #     - 9083:9083
-  #   depends_on:
-  #     postgres:
-  #         condition: service_healthy
-  # trino:
-  #   image: trinodb/trino:477
-  #   container_name: trino
-  #   volumes:
-  #     - ./conf/trino:/etc/trino
-  #   networks:
-  #     datalake_net:
-  #   ports:
-  #     - 8080:8080
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    volumes:
+      - ./data/pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'hive'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: 'metastore_db'
+      POSTGRES_HOST_AUTH_METHOD: 'trust'
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive -d metastore_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      datalake_net:
+  metastore-standalone:
+    image: apache/hive:4.1.0
+    container_name: metastore-standalone
+    volumes:
+      - ./conf/hive/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./postgresql-42.7.3.jar:/opt/hive/lib/postgres.jar
+    networks:
+      datalake_net:
+    environment:
+      SERVICE_NAME: 'metastore'
+      DB_DRIVER: 'postgres'
+      HADOOP_CLASSPATH: '/opt/hadoop/share/hadoop/tools/lib/bundle-2.24.6.jar:/opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.4.1.jar'
+      SERVICE_OPTS: '-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password'
+    ports:
+      - 9083:9083
+    depends_on:
+      postgres:
+          condition: service_healthy
+  trino:
+    image: trinodb/trino:480
+    container_name: trino
+    volumes:
+      - ./conf/trino:/etc/trino
+    networks:
+      datalake_net:
+    ports:
+      - 8080:8080
 networks:
   datalake_net:
