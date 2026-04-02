@@ -59,8 +59,12 @@ services:
   metastore-standalone:
     image: apache/hive:4.2.0
     container_name: metastore-standalone
+    entrypoint:
+      - /bin/bash
+      - /hive-entrypoint.sh
     volumes:
-      - ./conf/hive:/hive_custom_conf
+      - ./conf/hive/hive-site.xml:/hive_custom_conf/hive-site.xml:ro
+      - ./docker/hive-entrypoint.sh:/hive-entrypoint.sh:ro
       - ./postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
     networks:
       datalake_net:
@@ -69,7 +73,7 @@ services:
       DB_DRIVER: 'postgres'
       HADOOP_CLASSPATH: '/opt/hadoop/share/hadoop/tools/lib/bundle-2.24.6.jar:/opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.4.1.jar'
       SERVICE_OPTS: '-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password'
-      HIVE_CUSTOM_CONF_DIR: '/hive_custom_conf'
+      HIVE_CUSTOM_HIVE_SITE: '/hive_custom_conf/hive-site.xml'
     ports:
       - 9083:9083
     depends_on:
