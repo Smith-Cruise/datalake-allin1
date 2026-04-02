@@ -1,24 +1,26 @@
 services:
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: minio
+  rustfs:
+    image: rustfs/rustfs:1.0.0-alpha.90
+    container_name: rustfs
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=password
-      - MINIO_DOMAIN=minio
+      - RUSTFS_ACCESS_KEY=admin
+      - RUSTFS_SECRET_KEY=password
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_VOLUMES=/data
     volumes:
-      - ./data/minio-data:/data
+      - ./data/rustfs-data:/data
     networks:
       datalake_net:
         aliases:
-          - warehouse.minio
+          - warehouse.rustfs
     ports:
       - 9001:9001
       - 9000:9000
-    command: ["server", "/data", "--console-address", ":9001"]
   mc:
     depends_on:
-      - minio
+      - rustfs
     image: minio/mc:RELEASE.2025-08-13T08-35-41Z
     container_name: mc
     networks:
@@ -29,9 +31,9 @@ services:
       - AWS_REGION=us-east-1
     entrypoint: |
       /bin/sh -c "
-      until (/usr/bin/mc alias set minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
-      /usr/bin/mc mb -p minio/warehouse;
-      /usr/bin/mc policy set public minio/warehouse;
+      until (/usr/bin/mc alias set rustfs http://rustfs:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb -p rustfs/warehouse;
+      /usr/bin/mc policy set public rustfs/warehouse;
       tail -f /dev/null
       "
   postgres:
@@ -55,11 +57,15 @@ services:
     networks:
       datalake_net:
   metastore-standalone:
-    image: apache/hive:4.1.0
+    image: apache/hive:4.2.0
     container_name: metastore-standalone
+    entrypoint:
+      - /bin/bash
+      - /hive-entrypoint.sh
     volumes:
-      - ./conf/hive/hive-site.xml:/opt/hive/conf/hive-site.xml
-      - ./postgresql-42.7.3.jar:/opt/hive/lib/postgres.jar
+      - ./conf/hive/hive-site.xml:/hive_custom_conf/hive-site.xml:ro
+      - ./docker/hive-entrypoint.sh:/hive-entrypoint.sh:ro
+      - ./postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
     networks:
       datalake_net:
     environment:
@@ -67,13 +73,14 @@ services:
       DB_DRIVER: 'postgres'
       HADOOP_CLASSPATH: '/opt/hadoop/share/hadoop/tools/lib/bundle-2.24.6.jar:/opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.4.1.jar'
       SERVICE_OPTS: '-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password'
+      HIVE_CUSTOM_HIVE_SITE: '/hive_custom_conf/hive-site.xml'
     ports:
       - 9083:9083
     depends_on:
       postgres:
           condition: service_healthy
   trino:
-    image: trinodb/trino:477
+    image: trinodb/trino:480
     container_name: trino
     volumes:
       - ./conf/trino:/etc/trino
