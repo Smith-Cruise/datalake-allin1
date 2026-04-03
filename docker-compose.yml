@@ -11,6 +11,7 @@ services:
       - RUSTFS_VOLUMES=/data
     volumes:
       - ./data/rustfs-data:/data
+      - ./data/rustfs-logs:/logs
     networks:
       datalake_net:
         aliases:
