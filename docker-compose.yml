@@ -1,6 +1,6 @@
 services:
   rustfs:
-    image: rustfs/rustfs:1.0.0-alpha.90
+    image: rustfs/rustfs:1.0.0
     container_name: rustfs
     user: "0:0"
     environment:
@@ -20,23 +20,24 @@ services:
     ports:
       - 9001:9001
       - 9000:9000
-  mc:
+  rc-init:
     depends_on:
       - rustfs
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
-    container_name: mc
+    image: rustfs/rc:v0.1.36
+    container_name: rc-init
+    restart: "no"
     networks:
       datalake_net:
-    environment:
-      - AWS_ACCESS_KEY_ID=admin
-      - AWS_SECRET_ACCESS_KEY=password
-      - AWS_REGION=us-east-1
     entrypoint: |
       /bin/sh -c "
-      until (/usr/bin/mc alias set rustfs http://rustfs:9000 admin password) do echo '...waiting...' && sleep 1; done;
-      /usr/bin/mc mb -p rustfs/warehouse;
-      /usr/bin/mc policy set public rustfs/warehouse;
-      tail -f /dev/null
+      set -e;
+      rc alias set local http://rustfs:9000 admin password;
+      until rc bucket list local >/dev/null 2>&1; do echo '...waiting...' && sleep 1; done;
+      rc bucket create local/warehouse --ignore-existing;
+      rc bucket anonymous set public local/warehouse;
+      rc bucket create local/iceberg-rest --ignore-existing;
+      rc admin table warehouse enable local/iceberg-rest || true;
+      rc table warehouse show local/iceberg-rest
       "
   postgres:
     image: postgres:16
@@ -84,6 +85,9 @@ services:
   trino:
     image: trinodb/trino:480
     container_name: trino
+    depends_on:
+      rc-init:
+        condition: service_completed_successfully
     volumes:
       - ./conf/trino:/etc/trino
     networks:
