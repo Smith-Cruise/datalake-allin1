@@ -1,6 +1,6 @@
 services:
   rustfs:
-    image: rustfs/rustfs:1.0.0
+    image: rustfs/rustfs:1.0.2
     container_name: rustfs
     user: "0:0"
     environment:
